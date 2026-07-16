@@ -1,8 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+</script>
 
 <template>
-  <div class="min-h-screen bg-red-800">
-    <p>Hello</p>
+  <div class="min-h-screen bg-gray-200">
+    <RouterView />
   </div>
 </template>
 
