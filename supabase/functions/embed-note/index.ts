@@ -1,46 +1,72 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { corsHeaders } from '../_shared/cors.ts'
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import "@supabase/functions-js/edge-runtime.d.ts";
-import { withSupabase } from "@supabase/server";
+interface EmbedRequest {
+  text: string
+}
 
-console.log("Hello from Functions!");
+interface EmbedResponse {
+  embedding: number[]
+}
 
-// This endpoint uses 'publishable' | 'secret' access, apiKey is required.
-// Use publishable for Client-facing, key-validated endpoints
-// Use secret for Server-to-server, internal calls
-export default {
-  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req, ctx) => {
-    // Called by another service with a secret key
-    // ctx.supabaseAdmin bypasses RLS — use for privileged operations
-    /*
-    if (ctx.authMode === "secret") {
-      const { user_id } = await req.json();
-      const { data } = await ctx.supabaseAdmin.auth.admin.getUserById(user_id);
+const GEMINI_EMBED_URL =
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent'
 
-      return Response.json({
-        email: data?.user?.email,
-      });
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const { text }: EmbedRequest = await req.json()
+
+    if (!text || text.trim().length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'text is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
-    */
 
-    const { name } = await req.json();
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY')
+    if (!geminiApiKey) {
+      throw new Error('GEMINI_API_KEY is not set')
+    }
 
-    return Response.json({
-      message: `Hello ${name}!`,
-    });
-  }),
-};
+    const geminiResponse = await fetch(`${GEMINI_EMBED_URL}?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'models/gemini-embedding-001',
+        content: { parts: [{ text }] },
+        // RETRIEVAL_DOCUMENT — this embedding represents a stored note,
+        // not a search query. Gemini optimizes the vector differently for each.
+        taskType: 'RETRIEVAL_DOCUMENT',
+        outputDimensionality: 768
+      })
+    })
 
-/* To invoke locally:
+    if (!geminiResponse.ok) {
+      const errorBody = await geminiResponse.text()
+      console.error('Gemini embed error:', geminiResponse.status, errorBody)
+      throw new Error(`Gemini API responded with ${geminiResponse.status}`)
+    }
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
+    const geminiData = await geminiResponse.json()
+    const values: number[] | undefined = geminiData.embedding?.values
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/embed-note' \
-    --header 'apiKey: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' \
-    --data '{"name":"Functions"}'
+    if (!values) {
+      throw new Error('Gemini returned no embedding values')
+    }
 
-*/
+    const result: EmbedResponse = { embedding: values }
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  } catch (error) {
+    console.error('embed-note error:', error)
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+})
