@@ -48,6 +48,7 @@ const deleteMutation = useMutation({
 
 const summarizingNoteId = ref<string | null>(null)
 
+  // Calling Mutation
 const summarizeMutation = useMutation({
   mutationFn: summarizeNote,
   onMutate: (note: Note) => {

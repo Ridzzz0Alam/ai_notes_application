@@ -43,6 +43,7 @@ export type Database = {
         Row: {
           content: string | null
           created_at: string | null
+          embedding: string | null
           id: string
           summary: string | null
           tags: string[] | null
@@ -52,6 +53,7 @@ export type Database = {
         Insert: {
           content?: string | null
           created_at?: string | null
+          embedding?: string | null
           id?: string
           summary?: string | null
           tags?: string[] | null
@@ -61,6 +63,7 @@ export type Database = {
         Update: {
           content?: string | null
           created_at?: string | null
+          embedding?: string | null
           id?: string
           summary?: string | null
           tags?: string[] | null
