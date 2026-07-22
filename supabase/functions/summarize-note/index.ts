@@ -1,38 +1,105 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { corsHeaders } from '../_shared/cors.ts'
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import "@supabase/functions-js/edge-runtime.d.ts";
-import { withSupabase } from "@supabase/server";
+interface SummarizeRequest {
+  content: string
+}
 
-console.log("Hello from Functions!");
+interface SummarizeResponse {
+  summary: string
+  tags: string[]
+}
 
-// This endpoint uses 'publishable' | 'secret' access, apiKey is required.
-// Use publishable for Client-facing, key-validated endpoints
-// Use secret for Server-to-server, internal calls
-export default {
-  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req, ctx) => {
-    // Called by another service with a secret key
-    // ctx.supabaseAdmin bypasses RLS — use for privileged operations
-    /*
-    if (ctx.authMode === "secret") {
-      const { user_id } = await req.json();
-      const { data } = await ctx.supabaseAdmin.auth.admin.getUserById(user_id);
+const GEMINI_API_URL =
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
 
-      return Response.json({
-        email: data?.user?.email,
-      });
+Deno.serve(async (req: Request) => {
+  // CORS preflight must be handled first, before any other logic
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const { content }: SummarizeRequest = await req.json()
+
+    if (!content || content.trim().length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'content is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
-    */
 
-    const { name } = await req.json();
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY')
+    if (!geminiApiKey) {
+      throw new Error('GEMINI_API_KEY is not set')
+    }
 
-    return Response.json({
-      message: `Hello ${name}!`,
-    });
-  }),
-};
+    const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: `Summarize the following note in one or two sentences, and suggest 2-4 short topical tags. Note content:\n\n${content}`
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              summary: { type: 'STRING' },
+              tags: {
+                type: 'ARRAY',
+                items: { type: 'STRING' }
+              }
+            },
+            required: ['summary', 'tags']
+          }
+        }
+      })
+    })
+
+    if (!geminiResponse.ok) {
+      const errorBody = await geminiResponse.text()
+      console.error('Gemini API error:', geminiResponse.status, errorBody)
+
+      // Surface rate limits distinctly — the frontend can show a friendlier message for this one
+      if (geminiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit reached, try again in a moment' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      throw new Error(`Gemini API responded with ${geminiResponse.status}`)
+    }
+
+    const geminiData = await geminiResponse.json()
+    const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
+
+    if (!rawText) {
+      throw new Error('Gemini returned no usable content')
+    }
+
+    // responseSchema guarantees this parses cleanly — no markdown fences, no stray prose
+    const parsed: SummarizeResponse = JSON.parse(rawText)
+
+    return new Response(JSON.stringify(parsed), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  } catch (error) {
+    console.error('summarize-note error:', error)
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+});
 
 /* To invoke locally:
 
