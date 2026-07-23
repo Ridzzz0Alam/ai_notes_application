@@ -2,10 +2,10 @@
 
 > A privacy-first notes application with server-side AI summarisation, automatic tagging, and retrieval-augmented (RAG) chat grounded exclusively in the user's own notes.
 
-**Vue 3 · TypeScript · Supabase (Postgres + pgvector) · Deno Edge Functions · Google Gemini · Tailwind CSS v4**
+**Vue 3 · TypeScript · Supabase (Postgres + pgvector) · Deno Edge Functions · Google Gemini API· Tailwind CSS v4**
 
 <!-- TODO: Add these once deployed. A live link is the single highest-impact thing on this page. -->
-**[Live Demo](https://ai-notes-application.vercel.app)** · **[Video Walkthrough](#)** · **[Figma](#)**
+**[Live Demo](https://ai-notes-application.vercel.app)** · **[Video Walkthrough](#)** 
 
 <!-- TODO: Replace with a real screenshot or GIF of the RAG chat streaming an answer.
      Recruiters scan for ~15 seconds. A moving demo of the streaming chat is your best asset. -->
