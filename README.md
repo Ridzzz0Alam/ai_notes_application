@@ -254,7 +254,7 @@ Evidenced directly by the implementation:
 
 ## 6. Software Architecture
 
-### 6.1 Pattern: MVVM (via Vue's Composition API)
+### 6.1 System Architectural Diagram
 
 ![Application Screenshot](docs/architectural_diagram.jpeg)
 
@@ -304,6 +304,8 @@ _Decision:_ Truncate to 768 via `outputDimensionality`.
 _Consequence:_ 4× less storage, 4× faster search, negligible accuracy loss — valid only because the model is Matryoshka-trained. Naïvely truncating a non-Matryoshka embedding would destroy it.
 
 ### 6.4 RAG data flow
+
+![Application Screenshot](docs/data_flow_diagram.png)
 
 ```
 User: "What did I write about the design meeting?"
