@@ -55,7 +55,7 @@ function handleSubmit() {
     <textarea
       v-model="content"
       placeholder="Write your note..."
-      rows="4"
+      rows="10"
       class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
     ></textarea>
 
