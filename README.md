@@ -5,10 +5,12 @@
 **Vue 3 · TypeScript · Supabase (Postgres + pgvector) · Deno Edge Functions · Google Gemini API· Tailwind CSS v4**
 
 <!-- TODO: Add these once deployed. A live link is the single highest-impact thing on this page. -->
-**[Live Demo](https://ai-notes-application.vercel.app)** · **[Video Walkthrough](#)** 
+
+**[Live Demo](https://ai-notes-application.vercel.app)** · **[Video Walkthrough](#)**
 
 <!-- TODO: Replace with a real screenshot or GIF of the RAG chat streaming an answer.
      Recruiters scan for ~15 seconds. A moving demo of the streaming chat is your best asset. -->
+
 ![Application Screenshot](docs/Screenshot01.png)
 
 ![Application Screenshot](docs/Screenshot02.png)
@@ -36,7 +38,7 @@
 
 ### The problem
 
-Note-taking apps are excellent at *storing* information and poor at *retrieving* it. Once a personal knowledge base passes a few hundred notes, keyword search fails in a specific way: you remember the *idea* but not the *words*. Searching "design meeting" won't surface a note titled "Tuesday sync re: nav bar" — even though it's exactly what you wanted.
+Note-taking apps are excellent at _storing_ information and poor at _retrieving_ it. Once a personal knowledge base passes a few hundred notes, keyword search fails in a specific way: you remember the _idea_ but not the _words_. Searching "design meeting" won't surface a note titled "Tuesday sync re: nav bar" — even though it's exactly what you wanted.
 
 The obvious fix is to ask an AI. But that creates two new problems:
 
@@ -48,21 +50,21 @@ The obvious fix is to ask an AI. But that creates two new problems:
 VueNotes AI addresses both directly:
 
 - **The AI never runs in the browser.** All model calls execute inside Supabase Edge Functions. The Gemini API key exists only as a server-side secret and is never shipped to the client.
-- **Answers are retrieval-grounded.** Every note is embedded as a 768-dimensional vector on save. Questions are embedded too, matched against the user's notes via cosine similarity in Postgres, and *only the matching notes* are passed to the model as context. When nothing matches, the prompt explicitly instructs the model to say so rather than guess.
+- **Answers are retrieval-grounded.** Every note is embedded as a 768-dimensional vector on save. Questions are embedded too, matched against the user's notes via cosine similarity in Postgres, and _only the matching notes_ are passed to the model as context. When nothing matches, the prompt explicitly instructs the model to say so rather than guess.
 - **Isolation is enforced by the database, not the application.** Postgres Row Level Security means a user physically cannot read another user's rows — even with a modified client. The vector search function is independently scoped to `auth.uid()`.
 
 ### Aims and objectives
 
-| # | Objective | Status |
-| --- | --- | --- |
-| O1 | Multi-user auth with route protection and persistent sessions | ✅ |
-| O2 | Full CRUD for notes with optimistic cache invalidation | ✅ |
-| O3 | Database-enforced per-user data isolation (RLS) | ✅ |
-| O4 | One-click AI summary + auto-tagging with schema-guaranteed output | ✅ |
-| O5 | Semantic vector search over the user's own notes | ✅ |
-| O6 | Token-by-token streaming chat grounded in retrieved notes | ✅ |
-| O7 | Zero exposure of AI credentials to the client | ✅ |
-| O8 | Non-blocking embedding generation (UI never waits on AI) | ✅ |
+| #   | Objective                                                         | Status |
+| --- | ----------------------------------------------------------------- | ------ |
+| O1  | Multi-user auth with route protection and persistent sessions     | ✅     |
+| O2  | Full CRUD for notes with optimistic cache invalidation            | ✅     |
+| O3  | Database-enforced per-user data isolation (RLS)                   | ✅     |
+| O4  | One-click AI summary + auto-tagging with schema-guaranteed output | ✅     |
+| O5  | Semantic vector search over the user's own notes                  | ✅     |
+| O6  | Token-by-token streaming chat grounded in retrieved notes         | ✅     |
+| O7  | Zero exposure of AI credentials to the client                     | ✅     |
+| O8  | Non-blocking embedding generation (UI never waits on AI)          | ✅     |
 
 ### Attribution
 
@@ -96,20 +98,18 @@ Two findings directly validate this project's core thesis:
 
 **Competitive landscape.**
 
-| Product | AI approach | Gap this project addresses |
-| --- | --- | --- |
-| **Evernote** | <cite index="8-1">2025 update added a conversational assistant that searches user content, generates summaries, and fetches web information; also introduced natural-language semantic search</cite> | Closest competitor. Web-fetching means answers aren't strictly grounded in user data. |
-| **Google NotebookLM** | <cite index="8-1">Supports context windows up to one million tokens, handling entire books and project repositories</cite> | Long-context brute force rather than retrieval — expensive and doesn't scale past the window. |
-| **Notion AI** | <cite index="10-1">Introduced AI writing and summarisation in 2023; over 20 million monthly active users</cite> | Generation-focused; weaker on grounded retrieval over personal corpus. |
-| **Microsoft OneNote / Apple Notes** | Ecosystem-bundled, limited AI retrieval | Incumbent distribution advantage, minimal semantic search. |
+| Product                             | AI approach                                                                                                                                                                                          | Gap this project addresses                                                                    |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Evernote**                        | <cite index="8-1">2025 update added a conversational assistant that searches user content, generates summaries, and fetches web information; also introduced natural-language semantic search</cite> | Closest competitor. Web-fetching means answers aren't strictly grounded in user data.         |
+| **Google NotebookLM**               | <cite index="8-1">Supports context windows up to one million tokens, handling entire books and project repositories</cite>                                                                           | Long-context brute force rather than retrieval — expensive and doesn't scale past the window. |
+| **Notion AI**                       | <cite index="10-1">Introduced AI writing and summarisation in 2023; over 20 million monthly active users</cite>                                                                                      | Generation-focused; weaker on grounded retrieval over personal corpus.                        |
+| **Microsoft OneNote / Apple Notes** | Ecosystem-bundled, limited AI retrieval                                                                                                                                                              | Incumbent distribution advantage, minimal semantic search.                                    |
 
-**Positioning.** The incumbents are converging on AI-assisted retrieval, confirming the direction. The differentiator available to a small entrant is *strict grounding* — an assistant that answers only from your notes and openly admits when it can't, rather than blending your data with web results or model priors.
+**Positioning.** The incumbents are converging on AI-assisted retrieval, confirming the direction. The differentiator available to a small entrant is _strict grounding_ — an assistant that answers only from your notes and openly admits when it can't, rather than blending your data with web results or model priors.
 
-**Technical validation.** Retrieval-augmented generation is the established production pattern for grounding LLMs in private data (Lewis et al., 2020, *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*). The Matryoshka embedding approach — truncating `gemini-embedding-001` from 3072 to 768 dimensions — follows Kusupati et al., 2022, *Matryoshka Representation Learning*, and yields a 4× reduction in storage and search cost for marginal accuracy loss.
+**Technical validation.** Retrieval-augmented generation is the established production pattern for grounding LLMs in private data (Lewis et al., 2020, _Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks_). The Matryoshka embedding approach — truncating `gemini-embedding-001` from 3072 to 768 dimensions — follows Kusupati et al., 2022, _Matryoshka Representation Learning_, and yields a 4× reduction in storage and search cost for marginal accuracy loss.
 
 ### 2.2 Primary research
-
-
 
 <!-- Template — fill only with real data:
 
@@ -134,51 +134,51 @@ Requirements use MoSCoW prioritisation. Each maps to a verifiable acceptance tes
 <!-- TODO: If you ran primary research, ground these in it. If not, label them as assumption-based —
      which is honest and still legitimate practice. -->
 
-| Persona | Context | Core need |
-| --- | --- | --- |
-| **The Student** | Lecture and reading notes across a term | "I know I wrote about this — I can't remember what I called it." |
-| **The Knowledge Worker** | Meeting notes, decisions, action items | "What did we decide about X three weeks ago?" |
-| **The Privacy-Conscious User** | Personal journal, sensitive material | "I want AI search without handing my life to a third party." |
+| Persona                        | Context                                 | Core need                                                        |
+| ------------------------------ | --------------------------------------- | ---------------------------------------------------------------- |
+| **The Student**                | Lecture and reading notes across a term | "I know I wrote about this — I can't remember what I called it." |
+| **The Knowledge Worker**       | Meeting notes, decisions, action items  | "What did we decide about X three weeks ago?"                    |
+| **The Privacy-Conscious User** | Personal journal, sensitive material    | "I want AI search without handing my life to a third party."     |
 
 ### 3.2 Functional requirements
 
-| ID | Requirement | Priority | Status |
-| --- | --- | --- | --- |
-| FR-01 | User can register with email and password | Must | ✅ |
-| FR-02 | User can log in and log out | Must | ✅ |
-| FR-03 | Session persists across page reloads | Must | ✅ |
-| FR-04 | Unauthenticated users are redirected away from protected routes | Must | ✅ |
-| FR-05 | Authenticated users are redirected away from auth routes | Should | ✅ |
-| FR-06 | User can create a note with title and content | Must | ✅ |
-| FR-07 | User can view all their notes, newest first | Must | ✅ |
-| FR-08 | User can edit an existing note | Must | ✅ |
-| FR-09 | User can delete a note | Must | ✅ |
-| FR-10 | User can generate an AI summary of a note on demand | Must | ✅ |
-| FR-11 | System generates 2–4 topical tags alongside each summary | Must | ✅ |
-| FR-12 | Summary and tags persist and display on the note card | Must | ✅ |
-| FR-13 | Notes are embedded as vectors automatically on create and update | Must | ✅ |
-| FR-14 | User can ask natural-language questions about their notes | Must | ✅ |
-| FR-15 | Answers are grounded only in the user's own matched notes | Must | ✅ |
-| FR-16 | System explicitly states when no relevant notes are found | Must | ✅ |
-| FR-17 | Answers stream token-by-token rather than appearing at once | Should | ✅ |
-| FR-18 | UI indicates in-progress AI operations | Should | ✅ |
-| FR-19 | Full-text keyword search alongside semantic search | Could | ❌ |
-| FR-20 | Note sharing between users | Won't (v1) | ❌ |
+| ID    | Requirement                                                      | Priority   | Status |
+| ----- | ---------------------------------------------------------------- | ---------- | ------ |
+| FR-01 | User can register with email and password                        | Must       | ✅     |
+| FR-02 | User can log in and log out                                      | Must       | ✅     |
+| FR-03 | Session persists across page reloads                             | Must       | ✅     |
+| FR-04 | Unauthenticated users are redirected away from protected routes  | Must       | ✅     |
+| FR-05 | Authenticated users are redirected away from auth routes         | Should     | ✅     |
+| FR-06 | User can create a note with title and content                    | Must       | ✅     |
+| FR-07 | User can view all their notes, newest first                      | Must       | ✅     |
+| FR-08 | User can edit an existing note                                   | Must       | ✅     |
+| FR-09 | User can delete a note                                           | Must       | ✅     |
+| FR-10 | User can generate an AI summary of a note on demand              | Must       | ✅     |
+| FR-11 | System generates 2–4 topical tags alongside each summary         | Must       | ✅     |
+| FR-12 | Summary and tags persist and display on the note card            | Must       | ✅     |
+| FR-13 | Notes are embedded as vectors automatically on create and update | Must       | ✅     |
+| FR-14 | User can ask natural-language questions about their notes        | Must       | ✅     |
+| FR-15 | Answers are grounded only in the user's own matched notes        | Must       | ✅     |
+| FR-16 | System explicitly states when no relevant notes are found        | Must       | ✅     |
+| FR-17 | Answers stream token-by-token rather than appearing at once      | Should     | ✅     |
+| FR-18 | UI indicates in-progress AI operations                           | Should     | ✅     |
+| FR-19 | Full-text keyword search alongside semantic search               | Could      | ❌     |
+| FR-20 | Note sharing between users                                       | Won't (v1) | ❌     |
 
 ### 3.3 Non-functional requirements
 
-| ID | Category | Requirement | How it's met |
-| --- | --- | --- | --- |
-| NFR-01 | **Security** | AI provider credentials must never reach the client | Gemini key stored as a Supabase secret; all model calls server-side |
-| NFR-02 | **Security** | Users must be unable to access others' notes even with a modified client | Postgres RLS on all four CRUD operations |
-| NFR-03 | **Security** | Vector search must not leak across user boundaries | `match_notes` filters on `auth.uid()` internally |
-| NFR-04 | **Performance** | Note save must not block on AI latency | Fire-and-forget background embedding |
-| NFR-05 | **Performance** | Similarity search must not degrade linearly with corpus size | HNSW approximate-nearest-neighbour index |
-| NFR-06 | **Performance** | Perceived chat latency minimised | SSE streaming; first token renders immediately |
-| NFR-07 | **Reliability** | AI structured output must parse deterministically | Gemini `responseSchema` constrains decoding |
-| NFR-08 | **Reliability** | Background AI failure must not corrupt user data | Embedding errors caught and logged; note remains valid |
-| NFR-09 | **Maintainability** | Database schema and TypeScript types must not drift | Types generated from live schema via `npm run gen:types` |
-| NFR-10 | **Cost** | Vector storage minimised | Matryoshka truncation, 3072 → 768 dims |
+| ID     | Category            | Requirement                                                              | How it's met                                                        |
+| ------ | ------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| NFR-01 | **Security**        | AI provider credentials must never reach the client                      | Gemini key stored as a Supabase secret; all model calls server-side |
+| NFR-02 | **Security**        | Users must be unable to access others' notes even with a modified client | Postgres RLS on all four CRUD operations                            |
+| NFR-03 | **Security**        | Vector search must not leak across user boundaries                       | `match_notes` filters on `auth.uid()` internally                    |
+| NFR-04 | **Performance**     | Note save must not block on AI latency                                   | Fire-and-forget background embedding                                |
+| NFR-05 | **Performance**     | Similarity search must not degrade linearly with corpus size             | HNSW approximate-nearest-neighbour index                            |
+| NFR-06 | **Performance**     | Perceived chat latency minimised                                         | SSE streaming; first token renders immediately                      |
+| NFR-07 | **Reliability**     | AI structured output must parse deterministically                        | Gemini `responseSchema` constrains decoding                         |
+| NFR-08 | **Reliability**     | Background AI failure must not corrupt user data                         | Embedding errors caught and logged; note remains valid              |
+| NFR-09 | **Maintainability** | Database schema and TypeScript types must not drift                      | Types generated from live schema via `npm run gen:types`            |
+| NFR-10 | **Cost**            | Vector storage minimised                                                 | Matryoshka truncation, 3072 → 768 dims                              |
 
 ### 3.4 Constraints and assumptions
 
@@ -197,13 +197,13 @@ Waterfall was rejected for a specific, defensible reason: two core parameters of
 
 The iterative model instead delivers a working, demonstrable increment at each stage, with every AI feature layered onto a verified foundation.
 
-| Iteration | Deliverable | Exit criterion |
-| --- | --- | --- |
-| **1** | Supabase project, `notes` schema, generated types, data layer | `fetchNotes()` returns live data |
-| **2** | Auth, router guard, Row Level Security | **User B cannot see User A's notes** |
-| **3** | `summarize-note` Edge Function, structured JSON output | Summary + tags persist and render |
-| **4** | pgvector, `match_notes`, `embed-note`, `chat-notes`, streaming UI | Grounded answer streams; unknown query correctly refused |
-| **5** | Testing, hardening, deployment | Deployed and reachable |
+| Iteration | Deliverable                                                       | Exit criterion                                           |
+| --------- | ----------------------------------------------------------------- | -------------------------------------------------------- |
+| **1**     | Supabase project, `notes` schema, generated types, data layer     | `fetchNotes()` returns live data                         |
+| **2**     | Auth, router guard, Row Level Security                            | **User B cannot see User A's notes**                     |
+| **3**     | `summarize-note` Edge Function, structured JSON output            | Summary + tags persist and render                        |
+| **4**     | pgvector, `match_notes`, `embed-note`, `chat-notes`, streaming UI | Grounded answer streams; unknown query correctly refused |
+| **5**     | Testing, hardening, deployment                                    | Deployed and reachable                                   |
 
 **Why this order.** Iteration 2's exit criterion is the project's true gate. Security is foundational — retrofitting RLS onto a working app risks silently leaving a policy gap. Equally, every AI feature depends on correct CRUD; debugging a streaming RAG pipeline sitting on a broken data layer is intractable, because failures at every layer present identically as "the chat said it found nothing."
 
@@ -213,7 +213,6 @@ The iterative model instead delivers a working, demonstrable increment at each s
 ---
 
 ## 5. Design
-
 
 ### 5.1 Low-fidelity wireframes
 
@@ -229,82 +228,82 @@ _Three screens: Login/Signup (centred card), Notes (two-column — form + list l
 
 Evidenced directly by the implementation:
 
-| Token | Value | Applied to |
-| --- | --- | --- |
-| Primary | `indigo-600` | Buttons, focus rings, user chat bubbles |
-| AI accent | `purple-600` | Summarise action — visually distinct from CRUD |
-| Summary surface | `indigo-50` / `indigo-700` | AI-generated content blocks |
-| Destructive | `red-500` | Delete, error states |
-| Surface | `white` on `gray-200` | Cards on page background |
-| Radius | `rounded-lg` (cards), `rounded-md` (controls), `rounded-full` (tags) | — |
+| Token           | Value                                                                | Applied to                                     |
+| --------------- | -------------------------------------------------------------------- | ---------------------------------------------- |
+| Primary         | `indigo-600`                                                         | Buttons, focus rings, user chat bubbles        |
+| AI accent       | `purple-600`                                                         | Summarise action — visually distinct from CRUD |
+| Summary surface | `indigo-50` / `indigo-700`                                           | AI-generated content blocks                    |
+| Destructive     | `red-500`                                                            | Delete, error states                           |
+| Surface         | `white` on `gray-200`                                                | Cards on page background                       |
+| Radius          | `rounded-lg` (cards), `rounded-md` (controls), `rounded-full` (tags) | —                                              |
 
-**Rationale for the AI accent.** Summarise is purple while Edit/Delete are indigo/red, and it's pushed to the opposite end of the card with `ml-auto`. Both choices encode the same idea: *AI-generated content is visually distinguishable from user-authored content.* The user should never be uncertain about which words are theirs.
+**Rationale for the AI accent.** Summarise is purple while Edit/Delete are indigo/red, and it's pushed to the opposite end of the card with `ml-auto`. Both choices encode the same idea: _AI-generated content is visually distinguishable from user-authored content._ The user should never be uncertain about which words are theirs.
 
 ### 5.4 Key UX decisions
 
-| Decision | Rationale |
-| --- | --- |
-| **Streaming over spinner** | A spinner communicates "wait." Streaming text communicates "working, here's progress." Same latency, materially better perceived performance. |
-| **Chat panel is persistent, not modal** | Notes and chat are visible simultaneously — you can read the note the answer came from. Sticky on desktop (`lg:sticky`), stacked on mobile. |
-| **Background embedding** | Saving a note must feel instant. The AI work happens after the UI has already responded. |
-| **Per-note summarising state** | `summarizingNoteId` tracks *which* note is busy — only that card's button spins, not all of them. |
-| **Empty state as instruction** | The chat placeholder is a worked example ("What did I write about the design meeting?") rather than "No messages" — it teaches the interaction. |
-| **Honest failure** | When retrieval returns nothing, the app says so. Silence beats a plausible fabrication in a tool users are meant to trust. |
+| Decision                                | Rationale                                                                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Streaming over spinner**              | A spinner communicates "wait." Streaming text communicates "working, here's progress." Same latency, materially better perceived performance.   |
+| **Chat panel is persistent, not modal** | Notes and chat are visible simultaneously — you can read the note the answer came from. Sticky on desktop (`lg:sticky`), stacked on mobile.     |
+| **Background embedding**                | Saving a note must feel instant. The AI work happens after the UI has already responded.                                                        |
+| **Per-note summarising state**          | `summarizingNoteId` tracks _which_ note is busy — only that card's button spins, not all of them.                                               |
+| **Empty state as instruction**          | The chat placeholder is a worked example ("What did I write about the design meeting?") rather than "No messages" — it teaches the interaction. |
+| **Honest failure**                      | When retrieval returns nothing, the app says so. Silence beats a plausible fabrication in a tool users are meant to trust.                      |
 
 ---
 
 ## 6. Software Architecture
 
-
-![Application Screenshot](docs/Screenshot02.png)
-
-
 ### 6.1 Pattern: MVVM (via Vue's Composition API)
+
+![Application Screenshot](docs/architectural_diagram.jpeg)
+
+### 6.2 Pattern: MVVM (via Vue's Composition API)
 
 Vue's reactivity model maps naturally onto **Model–View–ViewModel**:
 
-| MVVM layer | Implementation |
-| --- | --- |
-| **Model** | `src/lib/notes.ts`, `src/types/`, Postgres schema + RLS |
+| MVVM layer    | Implementation                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Model**     | `src/lib/notes.ts`, `src/types/`, Postgres schema + RLS                                                                   |
 | **ViewModel** | `src/composables/` (`useAuth`, `useChat`) and TanStack Query hooks in views — reactive state + commands, no DOM knowledge |
-| **View** | `src/views/`, `src/components/` — declarative templates bound to ViewModel state |
-| **Binding** | Vue reactivity (`ref`, `watch`, `v-model`) replaces manual observer wiring |
+| **View**      | `src/views/`, `src/components/` — declarative templates bound to ViewModel state                                          |
+| **Binding**   | Vue reactivity (`ref`, `watch`, `v-model`) replaces manual observer wiring                                                |
 
 The clean test of the separation: `useChat` mutates `target.content += chunk` and the DOM updates. The ViewModel has no reference to any element. Views hold no data-access logic.
 
-### 6.2 Deliberate architectural decisions
+### 6.3 Deliberate architectural decisions
 
 **ADR-1 — AI execution is server-side.**
-*Context:* Gemini calls need an API key.
-*Decision:* All model calls run in Deno Edge Functions; the key is a Supabase secret.
-*Consequence:* The key cannot leak via DevTools or bundle inspection. Costs a network hop and a Deno runtime to maintain. **Non-negotiable** — a client-side key is a public key.
+_Context:_ Gemini calls need an API key.
+_Decision:_ All model calls run in Deno Edge Functions; the key is a Supabase secret.
+_Consequence:_ The key cannot leak via DevTools or bundle inspection. Costs a network hop and a Deno runtime to maintain. **Non-negotiable** — a client-side key is a public key.
 
 **ADR-2 — Authorisation lives in Postgres, not Vue.**
-*Context:* Multi-tenant data requires isolation.
-*Decision:* Row Level Security. `fetchNotes()` deliberately issues `select * from notes` with no user filter.
-*Consequence:* Isolation holds even against a hand-crafted request. Client-side filtering is a UI convenience, never a security control — this inverts that.
+_Context:_ Multi-tenant data requires isolation.
+_Decision:_ Row Level Security. `fetchNotes()` deliberately issues `select * from notes` with no user filter.
+_Consequence:_ Isolation holds even against a hand-crafted request. Client-side filtering is a UI convenience, never a security control — this inverts that.
 
 **ADR-3 — Two independent scopes on the vector search.**
-*Context:* `match_notes` runs as a database function.
-*Decision:* It filters `where notes.user_id = auth.uid()` internally, *in addition to* table-level RLS.
-*Consequence:* Defence in depth. RAG retrieval is the highest-risk leak surface in the system — it reads across rows by design — so it gets its own boundary.
+_Context:_ `match_notes` runs as a database function.
+_Decision:_ It filters `where notes.user_id = auth.uid()` internally, _in addition to_ table-level RLS.
+_Consequence:_ Defence in depth. RAG retrieval is the highest-risk leak surface in the system — it reads across rows by design — so it gets its own boundary.
 
 **ADR-4 — Embedding is fire-and-forget.**
-*Context:* Embedding adds ~1–2s to a save.
-*Decision:* Dispatch without `await`; catch and log failures.
-*Consequence:* Saves feel instant. Trade-off: a new note is briefly unsearchable, and a failed embedding is silent. Accepted — the note itself is never at risk, and the alternative (blocking the UI on an AI call) is worse.
+_Context:_ Embedding adds ~1–2s to a save.
+_Decision:_ Dispatch without `await`; catch and log failures.
+_Consequence:_ Saves feel instant. Trade-off: a new note is briefly unsearchable, and a failed embedding is silent. Accepted — the note itself is never at risk, and the alternative (blocking the UI on an AI call) is worse.
 
 **ADR-5 — Raw `fetch` for chat instead of `functions.invoke()`.**
-*Context:* `invoke()` buffers the full response before resolving.
-*Decision:* Raw `fetch` + `response.body.getReader()`.
-*Consequence:* True token-by-token streaming. Costs manual auth header construction.
+_Context:_ `invoke()` buffers the full response before resolving.
+_Decision:_ Raw `fetch` + `response.body.getReader()`.
+_Consequence:_ True token-by-token streaming. Costs manual auth header construction.
 
 **ADR-6 — 768 dimensions, not 3072.**
-*Context:* `gemini-embedding-001` defaults to 3072 dims.
-*Decision:* Truncate to 768 via `outputDimensionality`.
-*Consequence:* 4× less storage, 4× faster search, negligible accuracy loss — valid only because the model is Matryoshka-trained. Naïvely truncating a non-Matryoshka embedding would destroy it.
+_Context:_ `gemini-embedding-001` defaults to 3072 dims.
+_Decision:_ Truncate to 768 via `outputDimensionality`.
+_Consequence:_ 4× less storage, 4× faster search, negligible accuracy loss — valid only because the model is Matryoshka-trained. Naïvely truncating a non-Matryoshka embedding would destroy it.
 
-### 6.3 RAG data flow
+### 6.4 RAG data flow
 
 ```
 User: "What did I write about the design meeting?"
@@ -340,18 +339,18 @@ chat-notes (Deno, server-side)
 
 ### 7.1 Stack
 
-| Layer | Technology | Selection rationale |
-| --- | --- | --- |
-| Framework | Vue 3 + TypeScript | Composition API suits MVVM; end-to-end type safety from DB to template |
-| Build | Vite 8 | Native ESM, sub-second HMR |
-| Styling | Tailwind CSS v4 | Zero-config Vite plugin; utilities keep styles adjacent to markup |
-| Server state | TanStack Vue Query | Caching, loading/error states, invalidation — removes hand-rolled state |
-| Routing | Vue Router 5 | Navigation guards for auth |
-| Backend | Supabase | Postgres + Auth + Edge Functions in one platform |
-| Vector search | pgvector + HNSW | Vectors live beside relational data — one query, one security model, no separate vector DB to sync |
-| AI runtime | Deno Edge Functions | Server-side secret isolation |
-| Models | `gemini-2.5-flash`, `gemini-embedding-001` | Fast, structured output support, generous free tier |
-| Testing | Vitest + Vue Test Utils | Shares Vite config — no separate build pipeline |
+| Layer         | Technology                                 | Selection rationale                                                                                |
+| ------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Framework     | Vue 3 + TypeScript                         | Composition API suits MVVM; end-to-end type safety from DB to template                             |
+| Build         | Vite 8                                     | Native ESM, sub-second HMR                                                                         |
+| Styling       | Tailwind CSS v4                            | Zero-config Vite plugin; utilities keep styles adjacent to markup                                  |
+| Server state  | TanStack Vue Query                         | Caching, loading/error states, invalidation — removes hand-rolled state                            |
+| Routing       | Vue Router 5                               | Navigation guards for auth                                                                         |
+| Backend       | Supabase                                   | Postgres + Auth + Edge Functions in one platform                                                   |
+| Vector search | pgvector + HNSW                            | Vectors live beside relational data — one query, one security model, no separate vector DB to sync |
+| AI runtime    | Deno Edge Functions                        | Server-side secret isolation                                                                       |
+| Models        | `gemini-2.5-flash`, `gemini-embedding-001` | Fast, structured output support, generous free tier                                                |
+| Testing       | Vitest + Vue Test Utils                    | Shares Vite config — no separate build pipeline                                                    |
 
 **Why not a dedicated vector database?** Pinecone or Weaviate would mean a second datastore, a second security model, and a sync problem between notes and their embeddings. pgvector keeps the embedding in the same row as the note, which means RLS covers it automatically and there is no consistency window. At this scale the performance ceiling is irrelevant; the architectural simplification is not.
 
@@ -388,7 +387,7 @@ vue-js-note-ai/
 └── package.json
 ```
 
-**One deliberate asymmetry worth noting.** `useAuth` declares its refs at *module* scope, so every caller shares one instance — it's a singleton store. `useChat` declares refs *inside* the function, so each `ChatPanel` gets isolated state. Identical naming convention, opposite semantics, both correct for their purpose.
+**One deliberate asymmetry worth noting.** `useAuth` declares its refs at _module_ scope, so every caller shares one instance — it's a singleton store. `useChat` declares refs _inside_ the function, so each `ChatPanel` gets isolated state. Identical naming convention, opposite semantics, both correct for their purpose.
 
 ### 7.3 Database schema
 
@@ -473,19 +472,19 @@ Error paths verified: empty input → 400, missing auth header → 401, Gemini r
 
 Each test maps to a requirement from §3.
 
-| # | Test | Verifies | Result |
-| --- | --- | --- | --- |
-| 1 | `npm run build` — type-check + production build | Type integrity | ✅ |
-| 2 | Register, confirm user record | FR-01 | ✅ |
-| 3 | Hard-refresh while authenticated | FR-03 | ✅ |
-| 4 | Access `/` unauthenticated | FR-04 | ✅ |
-| 5 | Create / edit / delete note | FR-06–09 | ✅ |
-| 6 | **User B cannot see User A's notes** | NFR-02 | ✅ |
-| 7 | Summarise produces summary + tags | FR-10–12 | ✅ |
-| 8 | `embedding` populated within ~5s of save | FR-13 | ✅ |
-| 9 | Chat returns grounded answer, streaming | FR-14, FR-17 | ✅ |
-| 10 | **Query with no matching notes → refusal, not fabrication** | FR-16 | ✅ |
-| 11 | Inspect network payloads for Gemini key | NFR-01 | ✅ absent |
+| #   | Test                                                        | Verifies       | Result    |
+| --- | ----------------------------------------------------------- | -------------- | --------- |
+| 1   | `npm run build` — type-check + production build             | Type integrity | ✅        |
+| 2   | Register, confirm user record                               | FR-01          | ✅        |
+| 3   | Hard-refresh while authenticated                            | FR-03          | ✅        |
+| 4   | Access `/` unauthenticated                                  | FR-04          | ✅        |
+| 5   | Create / edit / delete note                                 | FR-06–09       | ✅        |
+| 6   | **User B cannot see User A's notes**                        | NFR-02         | ✅        |
+| 7   | Summarise produces summary + tags                           | FR-10–12       | ✅        |
+| 8   | `embedding` populated within ~5s of save                    | FR-13          | ✅        |
+| 9   | Chat returns grounded answer, streaming                     | FR-14, FR-17   | ✅        |
+| 10  | **Query with no matching notes → refusal, not fabrication** | FR-16          | ✅        |
+| 11  | Inspect network payloads for Gemini key                     | NFR-01         | ✅ absent |
 
 **Tests 6, 10, and 11 are the ones that matter.** They verify the three claims that define the product: isolation is real, grounding is real, and the key never ships. Everything else is table stakes.
 
@@ -515,7 +514,6 @@ The fixed `match_threshold: 0.5` is arbitrary and unvalidated. It has not been t
 
 ### 9.2 User feedback and usability evaluation
 
-
 <!-- Template — real data only:
 
 **Method.** Moderated think-aloud, n = [N], [dates], task: [...].
@@ -529,11 +527,11 @@ The fixed `match_threshold: 0.5` is arbitrary and unvalidated. It has not been t
 
 ### 9.3 Reflection
 
-**On grounding.** The technically interesting result is that preventing hallucination turned out to be a *prompt-branch* problem, not a model problem. The no-match branch — instructing the model to admit it found nothing — is a handful of lines and does most of the work. Retrieval quality determines whether the right notes arrive; the prompt determines whether the model stays honest when they don't.
+**On grounding.** The technically interesting result is that preventing hallucination turned out to be a _prompt-branch_ problem, not a model problem. The no-match branch — instructing the model to admit it found nothing — is a handful of lines and does most of the work. Retrieval quality determines whether the right notes arrive; the prompt determines whether the model stays honest when they don't.
 
 **On the cost of an iterative approach.** Iteration 2's exit criterion (User B cannot see User A's notes) felt slow at the time — it produces no visible feature. It was the correct sequencing. Retrofitting RLS onto a working app means auditing every existing query for assumptions that no longer hold, and a missed policy is invisible until it's a breach.
 
-**What I would do differently.** Build the evaluation harness (§11) *before* tuning retrieval, not after. I currently have no principled basis for the 0.5 threshold — only the observation that it seems fine. That's exactly the kind of unfalsifiable claim the iterative model is supposed to eliminate, and I skipped the step that would have caught it.
+**What I would do differently.** Build the evaluation harness (§11) _before_ tuning retrieval, not after. I currently have no principled basis for the 0.5 threshold — only the observation that it seems fine. That's exactly the kind of unfalsifiable claim the iterative model is supposed to eliminate, and I skipped the step that would have caught it.
 
 ---
 
@@ -541,20 +539,20 @@ The fixed `match_threshold: 0.5` is arbitrary and unvalidated. It has not been t
 
 **Architecture.** Static frontend on a CDN; backend and AI on Supabase's managed infrastructure. No servers to maintain.
 
-| Component | Target | Method |
-| --- | --- | --- |
-| Frontend | <!-- TODO: Vercel / Netlify --> | `npm run build` → static `dist/` |
-| Database | Supabase managed Postgres | SQL migrations |
-| Edge Functions | Supabase (Deno, globally distributed) | `npx supabase functions deploy <name>` |
-| Secrets | Supabase secret store | `npx supabase secrets set GEMINI_API_KEY=...` |
+| Component      | Target                                | Method                                        |
+| -------------- | ------------------------------------- | --------------------------------------------- |
+| Frontend       | <!-- TODO: Vercel / Netlify -->       | `npm run build` → static `dist/`              |
+| Database       | Supabase managed Postgres             | SQL migrations                                |
+| Edge Functions | Supabase (Deno, globally distributed) | `npx supabase functions deploy <name>`        |
+| Secrets        | Supabase secret store                 | `npx supabase secrets set GEMINI_API_KEY=...` |
 
 **Environment separation.**
 
-| Variable | Scope | Exposure |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL` | Client | Public — safe by design |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Client | Public — RLS makes it harmless |
-| `GEMINI_API_KEY` | Supabase secret | **Never leaves the server** |
+| Variable                        | Scope           | Exposure                       |
+| ------------------------------- | --------------- | ------------------------------ |
+| `VITE_SUPABASE_URL`             | Client          | Public — safe by design        |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Client          | Public — RLS makes it harmless |
+| `GEMINI_API_KEY`                | Supabase secret | **Never leaves the server**    |
 
 The publishable key being public is not a compromise — it's the intended model. It grants no authority on its own; every request it accompanies is still filtered by RLS against the caller's JWT.
 
@@ -635,13 +633,13 @@ npm run dev   # → localhost:5173
 
 ### Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Dev server |
-| `npm run build` | Type-check + production build |
-| `npm run test:unit` | Vitest |
+| Command             | Purpose                           |
+| ------------------- | --------------------------------- |
+| `npm run dev`       | Dev server                        |
+| `npm run build`     | Type-check + production build     |
+| `npm run test:unit` | Vitest                            |
 | `npm run gen:types` | Regenerate types from live schema |
-| `npm run lint` | ESLint + Oxlint |
+| `npm run lint`      | ESLint + Oxlint                   |
 
 ---
 
