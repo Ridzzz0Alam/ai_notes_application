@@ -303,7 +303,8 @@ _Context:_ `gemini-embedding-001` defaults to 3072 dims.
 _Decision:_ Truncate to 768 via `outputDimensionality`.
 _Consequence:_ 4× less storage, 4× faster search, negligible accuracy loss — valid only because the model is Matryoshka-trained. Naïvely truncating a non-Matryoshka embedding would destroy it.
 
-### 6.4 RAG data flow
+### 6.4 RAG data flow diagram
+
 
 ![Application Screenshot](docs/data_flow_diagram.png)
 
