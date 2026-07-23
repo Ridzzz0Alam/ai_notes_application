@@ -2,7 +2,7 @@
 
 > A privacy-first notes application with server-side AI summarisation, automatic tagging, and retrieval-augmented (RAG) chat grounded exclusively in the user's own notes.
 
-**Vue 3 · TypeScript · Supabase (Postgres + pgvector) · Deno Edge Functions · Google Gemini API· Tailwind CSS v4**
+**TECH STACK - Vue 3 · TypeScript · Supabase (Postgres + pgvector) · Deno Edge Functions · Google Gemini API· Tailwind CSS v4**
 
 <!-- TODO: Add these once deployed. A live link is the single highest-impact thing on this page. -->
 
@@ -304,7 +304,6 @@ _Decision:_ Truncate to 768 via `outputDimensionality`.
 _Consequence:_ 4× less storage, 4× faster search, negligible accuracy loss — valid only because the model is Matryoshka-trained. Naïvely truncating a non-Matryoshka embedding would destroy it.
 
 ### 6.4 RAG data flow diagram
-
 
 ![Application Screenshot](docs/data_flow_diagram.png)
 
