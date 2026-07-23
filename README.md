@@ -109,26 +109,7 @@ Two findings directly validate this project's core thesis:
 
 ### 2.2 Primary research
 
-> **⚠️ TODO — This section requires research only you can have conducted. Do not fabricate it.**
->
-> Primary research means data *you* gathered: surveys, interviews, usability sessions. If you didn't
-> do any, you have two honest options:
->
-> **Option A — Do it. It's genuinely cheap.** A 10-question Google Form sent to 15–20 classmates or
-> colleagues takes an afternoon and gives you real numbers to cite. Useful questions:
-> - How many notes are in your main note app? When did you last fail to find one you knew existed?
-> - Would you let an AI read your private notes? What would change your answer?
-> - Have you ever been given a confidently wrong answer by an AI assistant?
->
-> Then report: sample size, method, key findings, and — critically — **how findings changed the build.**
-> That last part is what separates real research from decoration.
->
-> **Option B — Delete this subsection entirely** and retitle §2 to "Market Research (Secondary)".
-> An honest, well-sourced secondary-only section is strictly better than an invented primary one.
->
-> **Never invent an option C.** A fabricated survey is a five-second interview question away from
-> collapsing ("What was your sample size? How did you recruit?"), and it turns a strong project into
-> an integrity problem.
+
 
 <!-- Template — fill only with real data:
 
@@ -233,21 +214,6 @@ The iterative model instead delivers a working, demonstrable increment at each s
 
 ## 5. Design
 
-> **⚠️ TODO — Wireframes and Figma files. Do not link to a Figma that doesn't exist.**
->
-> If you designed before building, add the artefacts here. If you built directly from the tutorial
-> (very common), you have two honest options:
->
-> **Option A — Reverse-engineer the design docs.** Legitimate and standard practice for documenting
-> an existing system. Open Figma, spend two hours reproducing the three screens (Login, Notes, Chat)
-> as clean lo-fi wireframes plus one hi-fi mock. You get a real portfolio artefact, a real link, and
-> a real design story — and you can honestly describe it as "design documentation produced during the
-> hardening iteration."
->
-> **Option B — Retitle this section "Interface Design"**, delete the wireframe subsections, and keep
-> only §5.3 (design system) and §5.4 (UX decisions), which are fully evidenced by the actual code.
->
-> **Do not** paste a placeholder Figma link. A dead link in a portfolio README is worse than no link.
 
 ### 5.1 Low-fidelity wireframes
 
@@ -288,6 +254,10 @@ Evidenced directly by the implementation:
 ---
 
 ## 6. Software Architecture
+
+
+![Application Screenshot](docs/Screenshot02.png)
+
 
 ### 6.1 Pattern: MVVM (via Vue's Composition API)
 
@@ -545,23 +515,6 @@ The fixed `match_threshold: 0.5` is arbitrary and unvalidated. It has not been t
 
 ### 9.2 User feedback and usability evaluation
 
-> **⚠️ TODO — This section requires testing sessions only you can have run. Do not invent quotes.**
->
-> Fabricated user feedback is the single most dangerous thing you could put in this file. "Tell me
-> about a piece of user feedback that surprised you and how you responded" is a *standard* interview
-> question — it's asked precisely because invented answers collapse instantly under follow-up.
->
-> **The good news: this is cheap to do for real.** Sit three people in front of the deployed app.
-> Give them one task ("add two notes about your week, then ask the app what you did") and say nothing
-> else. Watch. Write down every moment of hesitation. That's ~45 minutes of work and it produces
-> genuinely quotable material — real users always do something you didn't predict.
->
-> Structure findings as: **observation → severity → what you changed.** The third column is what
-> demonstrates engineering judgement. A finding you consciously chose *not* to act on, with a stated
-> reason, is worth as much as one you fixed.
->
-> **If you don't run sessions:** retitle §9 to "Technical Evaluation", keep §9.1 and §9.3, and delete
-> this subsection. An honest technical evaluation is a complete section on its own.
 
 <!-- Template — real data only:
 
