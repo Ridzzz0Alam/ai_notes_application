@@ -9,7 +9,9 @@
 
 <!-- TODO: Replace with a real screenshot or GIF of the RAG chat streaming an answer.
      Recruiters scan for ~15 seconds. A moving demo of the streaming chat is your best asset. -->
-![Screenshot](docs/screenshot.png)
+![Application Screenshot](docs/screenshot01.png)
+
+![Application Screenshot](docs/screenshot02.png)
 
 ---
 
