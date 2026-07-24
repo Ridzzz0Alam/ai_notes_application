@@ -1,4 +1,4 @@
-# VueNotes AI
+
 
 > A privacy-first notes application with server-side AI summarisation, automatic tagging, and retrieval-augmented (RAG) chat grounded exclusively in the user's own notes.
 
