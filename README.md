@@ -1,4 +1,4 @@
-
+# Lumina Notes ✨
 
 > A privacy-first notes application with server-side AI summarisation, automatic tagging, and retrieval-augmented (RAG) chat grounded exclusively in the user's own notes.
 
@@ -6,7 +6,7 @@
 
 <!-- TODO: Add these once deployed. A live link is the single highest-impact thing on this page. -->
 
-**[Live Demo](https://ai-notes-application.vercel.app)** · **[Video Walkthrough](#)**
+**[Live Demo](https://ai-notes-application.vercel.app)** · **[Video Walkthrough](https://youtu.be/KzHVL3Dfhk8)**
 
 <!-- TODO: Replace with a real screenshot or GIF of the RAG chat streaming an answer.
      Recruiters scan for ~15 seconds. A moving demo of the streaming chat is your best asset. -->
@@ -656,4 +656,3 @@ npm run dev   # → localhost:5173
 -->
 
 **Built with** [Vue](https://vuejs.org) · [Supabase](https://supabase.com) · [Gemini](https://ai.google.dev)
-Course foundation by [CodeWithLari](https://youtube.com/@codewithlari)
